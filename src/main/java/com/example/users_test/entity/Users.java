@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -21,7 +20,6 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    @Email(regexp = ".+@.+\\..+")
     private String email;
     private String name;
     private String lastName;
