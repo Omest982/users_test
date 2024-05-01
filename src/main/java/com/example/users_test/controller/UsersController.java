@@ -4,7 +4,7 @@ import com.example.users_test.dto.RegisterDto;
 import com.example.users_test.dto.SearchDto;
 import com.example.users_test.dto.UserDto;
 import com.example.users_test.dto.UserUpdateDto;
-import com.example.users_test.service.UserService;
+import com.example.users_test.service.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,27 +16,27 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UsersController {
-    private final UserService userService;
+    private final UsersService usersService;
 
     @PostMapping
     public UserDto registerUser(@RequestBody @Valid RegisterDto registerDto){
-        return userService.register(registerDto);
+        return usersService.register(registerDto);
     }
 
     @PutMapping("/{id}")
     public UserDto updateUserById(@PathVariable UUID id,
                                 @RequestBody @Valid UserUpdateDto userUpdateDto){
-        return userService.updateUser(id, userUpdateDto);
+        return usersService.updateUser(id, userUpdateDto);
     }
 
     @DeleteMapping("/{id}")
     public void deleteUserById(@PathVariable UUID id){
-        userService.deleteUserById(id);
+        usersService.deleteUserById(id);
     }
 
     @PostMapping("/search")
     public List<UserDto> searchUsers (@RequestBody @Valid SearchDto searchDto){
-        return userService.searchUsers(searchDto);
+        return usersService.searchUsers(searchDto);
     }
 
 }

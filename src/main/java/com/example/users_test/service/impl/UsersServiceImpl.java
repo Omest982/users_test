@@ -9,7 +9,7 @@ import com.example.users_test.exception.AgeRestrictionException;
 import com.example.users_test.exception.SearchException;
 import com.example.users_test.mapper.UsersMapper;
 import com.example.users_test.repository.UsersRepository;
-import com.example.users_test.service.UserService;
+import com.example.users_test.service.UsersService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UsersServiceImpl implements UsersService {
     private final UsersRepository usersRepository;
     private final UsersMapper usersMapper;
     @Value("${registration.age}")
@@ -39,7 +39,6 @@ public class UserServiceImpl implements UserService {
         }
 
         Users persistentUser = usersRepository.save(transientUser);
-
 
         return usersMapper.toUserDto(persistentUser);
     }
