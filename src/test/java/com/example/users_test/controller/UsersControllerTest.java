@@ -5,6 +5,7 @@ import com.example.users_test.dto.UserDto;
 import com.example.users_test.dto.UserUpdateDto;
 import com.example.users_test.exception.AgeRestrictionException;
 import com.example.users_test.exception.CustomExceptionHandler;
+import com.example.users_test.exception.SearchException;
 import com.example.users_test.service.UsersService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
@@ -19,13 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,17 +54,12 @@ public class UsersControllerTest {
                 .name("Test")
                 .lastName("Test")
                 .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
-                .phoneNumber("9012")
                 .build();
 
         UserDto userDto = UserDto.builder()
                 .id(userId)
-                .email("Test@test.com")
-                .address("Test")
                 .name("Test")
-                .lastName("Test")
                 .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
-                .phoneNumber("9012")
                 .build();
 
         given(usersService.register(registerDto)).willReturn(userDto);
@@ -84,7 +81,6 @@ public class UsersControllerTest {
                 .name("Test")
                 .lastName("Test")
                 .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
-                .phoneNumber("9012")
                 .build();
 
         String exceptionMsg = "Age is too low!";
@@ -109,17 +105,12 @@ public class UsersControllerTest {
                 .name("Updated")
                 .lastName("Test")
                 .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
-                .phoneNumber("9012")
                 .build();
 
         UserDto userDto = UserDto.builder()
                 .id(userId)
-                .email("Test@test.com")
-                .address("Test")
                 .name("Updated")
-                .lastName("Test")
                 .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
-                .phoneNumber("9012")
                 .build();
 
         given(usersService.updateUser(userId, updateDto)).willReturn(userDto);
@@ -132,5 +123,46 @@ public class UsersControllerTest {
                 .andExpect(jsonPath("$.id", is(userDto.id().toString())))
                 .andExpect(jsonPath("$.birthDate", is("2004-12-10")));
     }
+
+    @Test
+    public void searchUsers_withValidParams_returnsListOfUserDtoAsJson() throws Exception {
+
+        UUID userId = UUID.randomUUID();
+
+        LocalDate from = LocalDate.of(2004, Month.DECEMBER, 1);
+        LocalDate to = LocalDate.of(2004, Month.DECEMBER, 29);
+
+        UserDto userDto = UserDto.builder()
+                .id(userId)
+                .name("Test")
+                .birthDate(LocalDate.of(2004, Month.DECEMBER, 10))
+                .build();
+
+        given(usersService.searchUsers(from, to)).willReturn(List.of(userDto));
+
+        mvc.perform(get(String.format("/users/search?from=%s&to=%s", from, to))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name", is(userDto.name())))
+                .andExpect(jsonPath("$[0].id", is(userDto.id().toString())))
+                .andExpect(jsonPath("$[0].birthDate", is("2004-12-10")));
+    }
+
+    @Test
+    public void searchUsers_withInvalidParams_thenThrowsException() throws Exception {
+        LocalDate from = LocalDate.of(2004, Month.DECEMBER, 29);
+        LocalDate to = LocalDate.of(2004, Month.DECEMBER, 1);
+
+        String exceptionMsg = "Invalid date!";
+        given(usersService.searchUsers(any(), any())).willThrow(new SearchException(exceptionMsg));
+
+        mvc.perform(get(String.format("/users/search?from=%s&to=%s", from, to))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> Assertions.assertInstanceOf(SearchException.class, result.getResolvedException()))
+                .andExpect(result -> Assertions.assertEquals(exceptionMsg, result.getResolvedException().getMessage()));
+    }
+
 
 }
