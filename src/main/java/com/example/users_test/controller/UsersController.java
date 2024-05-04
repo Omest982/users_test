@@ -1,14 +1,15 @@
 package com.example.users_test.controller;
 
 import com.example.users_test.dto.RegisterDto;
-import com.example.users_test.dto.SearchDto;
 import com.example.users_test.dto.UserDto;
 import com.example.users_test.dto.UserUpdateDto;
 import com.example.users_test.service.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,9 +35,10 @@ public class UsersController {
         usersService.deleteUserById(id);
     }
 
-    @PostMapping("/search")
-    public List<UserDto> searchUsers (@RequestBody @Valid SearchDto searchDto){
-        return usersService.searchUsers(searchDto);
+    @GetMapping("/search")
+    public List<UserDto> searchUsers (@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate from,
+                                      @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate to){
+        return usersService.searchUsers(from, to);
     }
 
 }

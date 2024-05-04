@@ -1,7 +1,6 @@
 package com.example.users_test.service.impl;
 
 import com.example.users_test.dto.RegisterDto;
-import com.example.users_test.dto.SearchDto;
 import com.example.users_test.dto.UserDto;
 import com.example.users_test.dto.UserUpdateDto;
 import com.example.users_test.entity.Users;
@@ -63,12 +62,19 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public List<UserDto> searchUsers(SearchDto searchDto) {
-        if (!searchDto.from().isBefore(searchDto.to())){
+    public List<UserDto> searchUsers(LocalDate from, LocalDate to) {
+
+        LocalDate now = LocalDate.now();
+
+        if (from.isAfter(now) || to.isAfter(now)){
+            throw new SearchException("Date is in future!");
+        }
+
+        if (!from.isBefore(to)){
             throw new SearchException("Invalid date!");
         }
 
-        List<Users> users = usersRepository.findByBirthDateRange(searchDto.from(), searchDto.to());
+        List<Users> users = usersRepository.findByBirthDateRange(from, to);
 
         return users.stream()
                 .map(usersMapper::toUserDto)
