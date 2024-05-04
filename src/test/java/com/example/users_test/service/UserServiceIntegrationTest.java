@@ -16,9 +16,9 @@ public class UserServiceIntegrationTest {
     @Autowired
     private UsersService usersService;
 
-
     @Test
     void registerUserUnder18Years_Exception() {
+        // Given
         RegisterDto registerDto = RegisterDto.builder()
                 .email("Test@test.com")
                 .address("Test")
@@ -28,8 +28,10 @@ public class UserServiceIntegrationTest {
                 .phoneNumber("9012")
                 .build();
 
+        // When
         assertThrows(AgeRestrictionException.class,
-                () -> usersService.register(registerDto));
+                () -> usersService.register(registerDto),
+                "Expected register to throw due to invalid age");
     }
 
 }

@@ -1,10 +1,8 @@
 package com.example.users_test.service;
 
 import com.example.users_test.dto.RegisterDto;
-import com.example.users_test.dto.SearchDto;
 import com.example.users_test.dto.UserDto;
 import com.example.users_test.entity.Users;
-import com.example.users_test.exception.AgeRestrictionException;
 import com.example.users_test.exception.SearchException;
 import com.example.users_test.mapper.UsersMapper;
 import com.example.users_test.repository.UsersRepository;
@@ -91,7 +89,6 @@ public class UserServiceUnitTest {
         // Given
         LocalDate from = LocalDate.of(2020, Month.DECEMBER, 1);
         LocalDate to = LocalDate.of(2020, Month.DECEMBER, 31);
-        SearchDto searchDto = new SearchDto(from, to);
 
         List<Users> foundUsers = Arrays.asList(
                 new Users(UUID.randomUUID(), "test1@test.com", "Test", "User1", LocalDate.of(2020, Month.DECEMBER, 10), "Address1", "Phone1"),
@@ -108,7 +105,7 @@ public class UserServiceUnitTest {
         });
 
         // When
-        List<UserDto> result = usersService.searchUsers(searchDto);
+        List<UserDto> result = usersService.searchUsers(from, to);
 
         // Then
         assertThat(result).hasSize(foundUsers.size()).usingRecursiveComparison().isEqualTo(expectedDtos);
@@ -117,15 +114,30 @@ public class UserServiceUnitTest {
     }
 
     @Test
-    void searchUsers_InvalidDateRange_ThrowsException() {
+    void searchUsers_InvalidDateRange_Exception() {
         // Given
         LocalDate from = LocalDate.of(2020, Month.DECEMBER, 31);
         LocalDate to = LocalDate.of(2020, Month.DECEMBER, 1);
-        SearchDto searchDto = new SearchDto(from, to);
 
         // When
         assertThrows(SearchException.class,
-                () -> usersService.searchUsers(searchDto),
+                () -> usersService.searchUsers(from, to),
+                "Expected searchUsers to throw due to invalid date range");
+
+        // Then
+        verify(usersRepository, never()).findByBirthDateRange(any(LocalDate.class), any(LocalDate.class));
+        verify(usersMapper, never()).toUserDto(any(Users.class));
+    }
+
+    @Test
+    void searchUsers_DateRangeIsInFuture_Exception() {
+        // Given
+        LocalDate from = LocalDate.of(3020, Month.DECEMBER, 31);
+        LocalDate to = LocalDate.of(3020, Month.DECEMBER, 1);
+
+        // When
+        assertThrows(SearchException.class,
+                () -> usersService.searchUsers(from, to),
                 "Expected searchUsers to throw due to invalid date range");
 
         // Then
