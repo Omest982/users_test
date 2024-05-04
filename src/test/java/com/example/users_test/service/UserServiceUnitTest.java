@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -22,8 +21,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,9 +69,9 @@ public class UserServiceUnitTest {
                 .phoneNumber("9012")
                 .build();
 
-        Mockito.when(usersMapper.toUser(registerDto)).thenReturn(user);
-        Mockito.when(usersRepository.save(user)).thenReturn(user);
-        Mockito.when(usersMapper.toUserDto(user)).thenReturn(userDto);
+        given(usersMapper.toUser(registerDto)).willReturn(user);
+        given(usersRepository.save(user)).willReturn(user);
+        given(usersMapper.toUserDto(user)).willReturn(userDto);
 
         // When
         UserDto result = usersService.register(registerDto);
@@ -98,8 +98,8 @@ public class UserServiceUnitTest {
                 .map(user -> new UserDto(user.getId(), user.getEmail(), user.getName(), user.getLastName(), user.getBirthDate(), user.getAddress(), user.getPhoneNumber()))
                 .collect(Collectors.toList());
 
-        Mockito.when(usersRepository.findByBirthDateRange(from, to)).thenReturn(foundUsers);
-        Mockito.when(usersMapper.toUserDto(any(Users.class))).thenAnswer(invocation -> {
+        given(usersRepository.findByBirthDateRange(from, to)).willReturn(foundUsers);
+        given(usersMapper.toUserDto(any(Users.class))).willAnswer(invocation -> {
             Users user = invocation.getArgument(0);
             return new UserDto(user.getId(), user.getEmail(), user.getName(), user.getLastName(), user.getBirthDate(), user.getAddress(), user.getPhoneNumber());
         });

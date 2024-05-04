@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 public class CustomExceptionHandler {
 
     @ExceptionHandler(value = {SearchException.class, AgeRestrictionException.class})
-    public ResponseEntity<ExceptionAnswer> handleBadRequestExceptions(SearchException ex, HttpServletRequest request) {
+    public ResponseEntity<ExceptionAnswer> handleBadRequestExceptions(RuntimeException ex, HttpServletRequest request) {
 
         log.error("Search error at {}: {}", request.getContextPath(), ex.getMessage());
 
